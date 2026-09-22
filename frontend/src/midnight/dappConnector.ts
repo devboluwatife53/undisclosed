@@ -1,5 +1,31 @@
 import type { ConnectedAPI, InitialAPI } from "@midnight-ntwrk/dapp-connector-api";
+import { fromHex } from "@midnight-ntwrk/midnight-js/utils";
 import { networkConfig } from "./config";
+
+// A fixed message the wallet signs so the same wallet always reproduces the
+// same payroll identity secret. The signature never leaves this function in
+// its raw form — only its hash (an unrelated-looking 32-byte secret) is used
+// as the employer/employee secret key, and that secret only ever reaches the
+// chain through one-way commitment/nullifier hashes, never in plaintext. See
+// DESIGN.md for what's disclosed on-chain.
+const IDENTITY_MESSAGE = "undisclosed:payroll-identity:v1";
+
+/**
+ * Derives this wallet's payroll identity secret key by signing a fixed
+ * message and hashing the signature. Deterministic per wallet: reconnecting
+ * with the same wallet always reproduces the same secret, so there's no
+ * separate identity key to save or paste — but note the derivation is only
+ * as secret as the wallet's willingness to sign that exact message, so this
+ * offers no more protection than the wallet itself does.
+ */
+export const deriveIdentitySecretKey = async (api: ConnectedAPI): Promise<Uint8Array> => {
+  const { signature } = await api.signData(IDENTITY_MESSAGE, {
+    encoding: "text",
+    keyType: "unshielded",
+  });
+  const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(fromHex(signature)));
+  return new Uint8Array(digest);
+};
 
 /**
  * Wallets inject their Initial API under `window.midnight`, keyed by a

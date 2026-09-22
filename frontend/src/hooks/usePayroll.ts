@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 import { toHex, fromHex } from "@midnight-ntwrk/midnight-js/utils";
-import { connectWallet, disconnectWallet } from "../midnight/dappConnector";
+import { connectWallet, disconnectWallet, deriveIdentitySecretKey } from "../midnight/dappConnector";
 import { buildProviders } from "../midnight/providers";
 import {
   createPayrollRun as createPayrollRunCircuit,
@@ -33,11 +33,6 @@ export type WalletInfo = {
   unshieldedAddress: string;
   shieldedAddress: string;
 };
-
-const identityKeyStorageKey = (contractAddress: string) =>
-  `payroll.identitySecretKey.${contractAddress}`;
-
-const randomSecretKey = (): Uint8Array => crypto.getRandomValues(new Uint8Array(32));
 
 // Simple Merkle tree implementation for off-chain use
 class MerkleTree {
@@ -140,8 +135,12 @@ export const usePayrollState = () => {
         await connectWallet();
       setApi(connectedApi);
       setWallet({ walletName, unshieldedAddress, shieldedAddress });
-      const built = await buildProviders(connectedApi);
+      const [built, identitySecretKey] = await Promise.all([
+        buildProviders(connectedApi),
+        deriveIdentitySecretKey(connectedApi),
+      ]);
       setProviders(built);
+      setIdentitySecretKeyHex(toHex(identitySecretKey));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -187,18 +186,19 @@ export const usePayrollState = () => {
     [],
   );
 
+  // identitySecretKeyHex is set by connect() (derived from the wallet's
+  // signature — see dappConnector.ts) before either of these can be called,
+  // so both use it as the default and only accept an override for testing.
   const join = useCallback(
     async (address: string, identitySecretKeyOverride?: string) => {
       if (!providers) return;
       setError(null);
       setBusy("Loading contract...");
       try {
-        const stored =
-          identitySecretKeyOverride ?? localStorage.getItem(identityKeyStorageKey(address));
-        const identitySecretKey = stored ? new Uint8Array(fromHex(stored)) : randomSecretKey();
+        const hex = identitySecretKeyOverride ?? identitySecretKeyHex;
+        if (!hex) throw new Error("No wallet identity available — reconnect and try again");
+        const identitySecretKey = new Uint8Array(fromHex(hex));
         const found = await joinPayrollContract(providers, address, identitySecretKey);
-        localStorage.setItem(identityKeyStorageKey(address), toHex(identitySecretKey));
-        setIdentitySecretKeyHex(toHex(identitySecretKey));
         setContract(found);
         setContractAddress(address);
         await refreshLedgerState(address, providers);
@@ -208,7 +208,7 @@ export const usePayrollState = () => {
         setBusy(null);
       }
     },
-    [providers, refreshLedgerState],
+    [providers, identitySecretKeyHex, refreshLedgerState],
   );
 
   const deploy = useCallback(
@@ -217,12 +217,10 @@ export const usePayrollState = () => {
       setError(null);
       setBusy("Deploying payroll contract...");
       try {
-        const identitySecretKey = identitySecretKeyOverride
-          ? new Uint8Array(fromHex(identitySecretKeyOverride))
-          : randomSecretKey();
+        const hex = identitySecretKeyOverride ?? identitySecretKeyHex;
+        if (!hex) throw new Error("No wallet identity available — reconnect and try again");
+        const identitySecretKey = new Uint8Array(fromHex(hex));
         const deployed = await deployPayroll(providers, identitySecretKey);
-        localStorage.setItem(identityKeyStorageKey(deployed.deployTxData.public.contractAddress), toHex(identitySecretKey));
-        setIdentitySecretKeyHex(toHex(identitySecretKey));
         setContract(deployed);
         setContractAddress(deployed.deployTxData.public.contractAddress);
         await refreshLedgerState(deployed.deployTxData.public.contractAddress, providers);
@@ -232,7 +230,7 @@ export const usePayrollState = () => {
         setBusy(null);
       }
     },
-    [providers, refreshLedgerState],
+    [providers, identitySecretKeyHex, refreshLedgerState],
   );
 
   // Employer: Create payroll run
