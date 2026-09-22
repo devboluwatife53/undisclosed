@@ -1,0 +1,267 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// ======================================================================
+// Types
+// ======================================================================
+
+// Employee registration commitment: hash(pubkey || amount || nonce)
+// This hides both the employee identity and their salary amount
+export struct EmployeeCommitment {
+  commitment: Bytes<32>;
+  pubkeyHash: Bytes<32>; // hash of employee's public key for verification
+}
+
+// Merkle proof for employee membership in payroll tree
+export struct MerkleProof {
+  leaf: Bytes<32>;
+  path0: Bytes<32>; // sibling at level 0
+  path1: Bytes<32>; // sibling at level 1
+  path2: Bytes<32>; // sibling at level 2
+  path3: Bytes<32>; // sibling at level 3
+  indices: Bytes<32>; // bitmask: 1 bit per level, 0 = left, 1 = right
+}
+
+// Withdrawal proof: employee proves they know the preimage of a leaf
+// without revealing which leaf or the amount
+export struct WithdrawalProof {
+  merkleProof: MerkleProof;
+  nullifier: Bytes<32>; // prevents double-spend
+  amount: Bytes<32>; // private amount (witness only, padded to 32 bytes)
+  pubkey: Bytes<32>; // employee's public key (witness only)
+  nonce: Bytes<32>; // commitment nonce (witness only)
+}
+
+// Public ledger state
+export struct PayrollRun {
+  id: Uint<64>;
+  employer: Bytes<32>; // employer's public key
+  merkleRoot: Bytes<32>; // root of employee commitment tree
+  totalCommitted: Uint<64>; // total payroll amount (public commitment)
+  isActive: Uint<1>;
+  isFinalized: Uint<1>;
+}
+
+// Shielded pool state - tracks the single shielded note holding all payroll funds
+export struct ShieldedPool {
+  noteCommitment: Bytes<32>; // commitment to the shielded note
+  value: Uint<64>; // total value in pool (public)
+  isSpent: Uint<1>;
+}
+
+// Nullifier set to prevent double-spending
+// Simplified for MVP - using a counter instead of Set
+export ledger nullifierCount: Counter;
+
+// Payroll runs - using Counter for run IDs
+export ledger payrollCounter: Counter;
+
+// Current payroll run state (simplified to single active run for MVP)
+export ledger currentRun: PayrollRun;
+export ledger hasActiveRun: Uint<1>;
+
+// Shielded pool
+export ledger shieldedPool: ShieldedPool;
+
+// ======================================================================
+// Witnesses (private state)
+// ======================================================================
+
+witness employerSecretKey(): Bytes<32>;
+witness employeeSecretKey(): Bytes<32>;
+witness employeeAmount(): Uint<64>;
+witness employeeNonce(): Bytes<32>;
+witness shieldedNoteSecret(): Bytes<32>;
+witness shieldedNoteValue(): Uint<64>;
+
+// ======================================================================
+// Pure Circuits (no ledger state changes)
+// ======================================================================
+
+// Compute employee commitment: hash(pubkey || amount || nonce)
+// HIDES: employee identity (pubkey), salary amount
+// REVEALS: nothing (output is a commitment)
+export circuit computeCommitment(pubkey: Bytes<32>, amount: Bytes<32>, nonce: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pubkey, amount, nonce]);
+}
+
+// Compute nullifier: hash(commitment || secret)
+// HIDES: which commitment was used
+// REVEALS: unique nullifier for this spend (prevents double-spend)
+export circuit computeNullifier(commitment: Bytes<32>, secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([commitment, secret]);
+}
+
+// Verify Merkle proof: proves leaf is in tree with given root
+// HIDES: leaf position in tree, other leaves
+// REVEALS: root (already public), that leaf is in tree
+export circuit verifyMerkleProof(root: Bytes<32>, proof: MerkleProof): Boolean {
+  // Simplified: just verify the leaf equals root (for single-element tree)
+  // In production, implement proper Merkle verification
+  return proof.leaf == root;
+}
+
+// Verify withdrawal proof: employee knows preimage of a registered commitment
+// HIDES: which employee, their salary amount
+// REVEALS: nullifier (to prevent double-spend), that employee is valid
+export circuit verifyWithdrawalProof(
+  merkleRoot: Bytes<32>,
+  proof: WithdrawalProof
+): Boolean {
+  // Verify Merkle membership
+  const validMerkle = verifyMerkleProof(merkleRoot, proof.merkleProof);
+  assert(validMerkle, "Invalid Merkle proof");
+
+  // Verify commitment matches leaf
+  const computedCommitment = computeCommitment(proof.pubkey, proof.amount, proof.nonce);
+  assert(computedCommitment == proof.merkleProof.leaf, "Commitment mismatch");
+
+  // Verify nullifier is correctly derived
+  const computedNullifier = computeNullifier(proof.merkleProof.leaf, proof.nonce);
+  assert(computedNullifier == proof.nullifier, "Nullifier mismatch");
+
+  // Verify nullifier not already used - simplified for MVP
+  // In production, use proper Set membership check
+  // assert(!nullifiers.contains(proof.nullifier), "Nullifier already used");
+
+  return true;
+}
+
+// Compute shielded note commitment
+// HIDES: note value, recipient
+// REVEALS: commitment only
+export circuit computeShieldedCommitment(value: Bytes<32>, secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([value, secret]);
+}
+
+// Verify shielded note opening
+// HIDES: nothing additional (value and secret are witnesses)
+// REVEALS: that commitment opens to given value
+export circuit verifyShieldedOpening(
+  commitment: Bytes<32>,
+  value: Bytes<32>,
+  secret: Bytes<32>
+): Boolean {
+  const computed = computeShieldedCommitment(value, secret);
+  return computed == commitment;
+}
+
+// ======================================================================
+// Impure Circuits (modify ledger state)
+// ======================================================================
+
+// Employer creates a new payroll run
+// PUBLIC: merkleRoot, totalCommitted, employer pubkey
+// PRIVATE: individual employee commitments (built off-chain)
+export circuit createPayrollRun(merkleRoot: Bytes<32>, totalCommitted: Uint<64>): [] {
+  const employer = publicKey(employerSecretKey());
+  
+  payrollCounter.increment(1);
+  const runId = payrollCounter;
+  
+  currentRun = PayrollRun {
+    id: runId,
+    employer: disclose(employer),
+    merkleRoot: disclose(merkleRoot),
+    totalCommitted: disclose(totalCommitted),
+    isActive: 1,
+    isFinalized: 0,
+  };
+  hasActiveRun = 1;
+}
+
+// Employer funds the shielded pool with total payroll amount
+// PUBLIC: note commitment, total value
+// PRIVATE: note secret, actual value (witness)
+export circuit fundPayroll(noteCommitment: Bytes<32>, value: Uint<64>): [] {
+  assert(hasActiveRun == 1, "No active payroll run");
+  assert(currentRun.isActive == 1, "Payroll run not active");
+  assert(currentRun.totalCommitted == value, "Value mismatch with committed total");
+  
+  shieldedPool = ShieldedPool {
+    noteCommitment: disclose(noteCommitment),
+    value: disclose(value),
+    isSpent: 0,
+  };
+}
+
+// Employee withdraws their salary
+// PUBLIC: nullifier, amount (disclosed to recipient only via shielded transfer)
+// PRIVATE: which employee, their exact salary (hidden by ZK proof)
+export circuit withdraw(proof: WithdrawalProof): [] {
+  assert(hasActiveRun == 1, "No active payroll run");
+  assert(currentRun.isActive == 1, "Payroll run not active");
+  assert(shieldedPool.isSpent == 0, "Pool already spent");
+  
+  // Verify the ZK proof
+  const valid = verifyWithdrawalProof(currentRun.merkleRoot, proof);
+  assert(valid, "Invalid withdrawal proof");
+  
+  // Mark nullifier as used (increment counter)
+  nullifierCount.increment(1);
+  
+  // In a full implementation, this would create a new shielded note for the employee
+  // For MVP, we track that funds were withdrawn
+  // The actual value transfer happens via Midnight's Zswap shielded transfers off-chain
+}
+
+// Employer finalizes payroll (no more withdrawals)
+export circuit finalizePayroll(): [] {
+  assert(hasActiveRun == 1, "No active payroll run");
+  assert(currentRun.isActive == 1, "Payroll run not active");
+  
+  // Mark as finalized - replace entire struct
+  currentRun = PayrollRun {
+    id: currentRun.id,
+    employer: currentRun.employer,
+    merkleRoot: currentRun.merkleRoot,
+    totalCommitted: currentRun.totalCommitted,
+    isActive: 0,
+    isFinalized: 1,
+  };
+  hasActiveRun = 0;
+  
+  // Mark pool as spent - replace entire struct
+  shieldedPool = ShieldedPool {
+    noteCommitment: shieldedPool.noteCommitment,
+    value: shieldedPool.value,
+    isSpent: 1,
+  };
+}
+
+// Helper: derive public key from secret key
+// HIDES: secret key
+// REVEALS: public key (one-way)
+export circuit publicKey(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "payroll:pk:"), sk]);
+}
+
+// ======================================================================
+// Queries (read-only)
+// ======================================================================
+
+// Get current payroll run details (public)
+export circuit getCurrentRun(): PayrollRun {
+  return currentRun;
+}
+
+// Check if there's an active run
+export circuit hasActivePayrollRun(): Uint<1> {
+  return hasActiveRun;
+}
+
+// Get nullifier count (number of withdrawals)
+export circuit getNullifierCount(): Uint<64> {
+  return nullifierCount;
+}
+
+// Get shielded pool state
+export circuit getShieldedPool(): ShieldedPool {
+  return shieldedPool;
+}
+
+// Get payroll counter
+export circuit getPayrollCounter(): Uint<64> {
+  return payrollCounter;
+}
