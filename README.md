@@ -23,13 +23,12 @@ MVP (multi-leaf Merkle verification, enforced nullifier set).
 
 ## Deployed contract
 
-> 🚧 Not yet deployed — this section will be filled in once a Preview/Preprod deployment exists.
-
-- Network: _TBD_
-- Contract address: _TBD_
+- Network: **Preview**
+- Contract address: `9fa713a0ac1f9926f514a9430f191f8481ce4f6e8d0ffa3aa0a2652c3f5010dc`
 - Verify independently at any time (no wallet needed, reads the indexer directly):
   ```bash
-  CONTRACT_ADDRESS=<address> npm run status:preview
+  cd cli
+  CONTRACT_ADDRESS=9fa713a0ac1f9926f514a9430f191f8481ce4f6e8d0ffa3aa0a2652c3f5010dc npm run status:preview
   ```
 
 ## Live demo
@@ -73,12 +72,17 @@ contract/          Compact contract, generated managed/ output, tests
   src/payroll-witnesses.ts     private-state shape + witness implementation
   src/managed/payroll/         generated circuits, zkir, and prover/verifier keys
   src/test/payroll.test.ts     vitest suite against a local simulator
+cli/                Node-based deployment tooling (Preview + Preprod)
+  src/deploy-{preview,preprod}.ts   build/fund a wallet, deploy, print address
+  src/status-{preview,preprod}.ts   read a deployed contract's public state
+  proof-server.yml       docker compose for the local proof server
 frontend/           Browser DApp — Lace wallet connect + circuit calls
   src/midnight/payrollContract.ts   DApp Connector ↔ midnight-js bridge for payroll
   src/midnight/providers.ts         wallet ↔ midnight-js provider bridge
   src/hooks/usePayroll.ts           connect/disconnect/role/withdraw/etc. state
   src/components/    WalletBar, RoleSelector, EmployerView, EmployeeView
-  public/landing/     static marketing landing page, served at /landing
+  index.html          static landing page, served at /
+  app/                the React DApp entry, served at /app
 ```
 
 ## Setup — run it locally
@@ -99,7 +103,7 @@ proof server, if you deploy outside the browser), Node.js 22.
    ```bash
    nvm install 22 && nvm use 22
    ```
-3. **Install dependencies** (npm workspaces cover `contract/` and `frontend/`):
+3. **Install dependencies** (npm workspaces cover `contract/`, `cli/`, and `frontend/`):
    ```bash
    npm install
    ```
@@ -113,12 +117,33 @@ proof server, if you deploy outside the browser), Node.js 22.
    ```bash
    npm test
    ```
-6. **Run the frontend**:
+6. **Start the local proof server** (needed for CLI deploys — the frontend
+   instead delegates proving to Lace itself, no local server required):
+   ```bash
+   cd ../cli && npm run proof-server   # docker compose, listens on :6300
+   ```
+7. **Deploy**, in a second terminal — `preview` or `preprod`:
+   ```bash
+   npm run deploy:preview   # or: npm run deploy:preprod
+   ```
+   With no `WALLET_SEED` set, this generates a fresh wallet and a fresh
+   employer identity key, prints the wallet's unshielded address, and
+   waits for you to fund it from the network's faucet
+   ([Preview](https://faucet.preview.midnight.network/) /
+   [Preprod](https://faucet.preprod.midnight.network/)) before deploying.
+   **Save the printed seed and identity secret key** — reuse the identity
+   key to manage the same payroll runs later:
+   ```bash
+   WALLET_SEED=<hex seed> IDENTITY_SECRET_KEY=<hex key> npm run deploy:preprod
+   ```
+8. **Check a deployed contract's public state** at any time, no wallet needed:
+   ```bash
+   CONTRACT_ADDRESS=<address> npm run status:preview
+   ```
+9. **Run the frontend**:
    ```bash
    cd ../frontend && npm run dev   # http://localhost:5173
    ```
-
-There is no deploy CLI yet — see "Deployed contract" above for status.
 
 ## Frontend — Lace wallet DApp
 
