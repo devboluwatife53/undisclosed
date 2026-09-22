@@ -1,0 +1,107 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: light;
+
+  --bg: #eef2f1;
+  --surface: #ffffff;
+  --ink: #12191c;
+  --ink-soft: #57666b;
+  --line: #c9d3d1;
+
+  --header-bg: #0e1416;
+  --header-ink: #edf2f0;
+  --header-line: #263134;
+
+  --signal: #1f9e7a;
+  --signal-soft: #e1f3ec;
+  --signal-ink: #0e5c46;
+
+  --redact: #97a6a3;
+  --redact-soft: #e4e9e8;
+
+  --danger: #b6432a;
+  --danger-soft: #f6e3dd;
+
+  --font-ui: "Archivo", system-ui, -apple-system, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--bg);
+}
+
+a {
+  color: var(--signal-ink);
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  padding: 0.6em 1.1em;
+  background: var(--ink);
+  color: var(--bg);
+  transition: opacity 0.1s ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.82;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+
+textarea,
+input,
+select {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0.5em 0.65em;
+  outline: none;
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--redact);
+}
+
+code {
+  font-family: var(--font-data);
+  font-size: 0.85em;
+  color: var(--ink);
+  word-break: break-all;
+}

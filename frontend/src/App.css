@@ -1,0 +1,415 @@
+.board {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 0 4rem;
+}
+
+/* ---------------------------------------------------------------- */
+/* Nameplate — dark ledger header, wordmark + network + wallet       */
+/* ---------------------------------------------------------------- */
+
+.wallet-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--header-bg);
+  color: var(--header-ink);
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--header-line);
+  margin: 0 calc(50% - 50vw) 2.25rem;
+  padding-left: calc(1.25rem + (50vw - 50%));
+  padding-right: calc(1.25rem + (50vw - 50%));
+}
+
+.wallet-bar__mark {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.wallet-bar .connect-btn {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #06231b;
+}
+
+.wallet-bar.connected {
+  justify-content: flex-end;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  color: var(--header-ink);
+}
+
+.wallet-name {
+  font-weight: 600;
+}
+
+.wallet-address {
+  color: #9fb0ac;
+}
+
+.disconnect-btn {
+  background: transparent;
+  border-color: var(--header-line);
+  color: var(--header-ink);
+}
+
+/* ---------------------------------------------------------------- */
+/* Intro / empty states                                              */
+/* ---------------------------------------------------------------- */
+
+.intro {
+  padding: 2.5rem 1.25rem;
+  max-width: 46ch;
+  margin: 0 auto;
+}
+
+.intro h2 {
+  font-size: 1.4rem;
+  margin: 0 0 0.75rem;
+}
+
+.intro p {
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+}
+
+.intro ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+.error-strip {
+  background: var(--danger-soft);
+  border-left: 3px solid var(--danger);
+  color: var(--danger);
+  padding: 0.7rem 1rem;
+  margin: 0 1.25rem 1.25rem;
+  font-size: 0.88rem;
+}
+
+/* ---------------------------------------------------------------- */
+/* Role switch — a two-position toggle, not tabs                     */
+/* ---------------------------------------------------------------- */
+
+.role-selector {
+  padding: 0 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.role-selector h3 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0 0 0.5rem;
+}
+
+.role-buttons {
+  display: inline-flex;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.role-buttons button {
+  border: none;
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.role-buttons button + button {
+  border-left: 1px solid var(--ink);
+}
+
+.role-buttons button.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ---------------------------------------------------------------- */
+/* Shared dashboard chrome                                           */
+/* ---------------------------------------------------------------- */
+
+.employer-view,
+.employee-view {
+  padding: 0 1.25rem;
+}
+
+.employer-view h2,
+.employee-view h2 {
+  font-size: 1.3rem;
+  margin: 0 0 1.5rem;
+}
+
+.section {
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.section h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.9rem;
+}
+
+.section p {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.section.empty p {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- */
+/* Public-key display — your own key is disclosed, so show it plainly*/
+/* ---------------------------------------------------------------- */
+
+.pubkey-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  background: var(--signal-soft);
+  border-left: 3px solid var(--signal);
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.88rem;
+}
+
+.pubkey-display strong {
+  color: var(--signal-ink);
+}
+
+.pubkey-display code {
+  font-size: 0.82rem;
+}
+
+.pubkey-display small {
+  width: 100%;
+  color: var(--ink-soft);
+}
+
+.copy-btn {
+  background: transparent;
+  border-color: var(--signal-ink);
+  color: var(--signal-ink);
+  padding: 0.2em 0.6em;
+  font-size: 0.78rem;
+}
+
+/* ---------------------------------------------------------------- */
+/* Employee table — a ledger, not a card grid                        */
+/* ---------------------------------------------------------------- */
+
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.9rem;
+}
+
+.employee-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 0 0.5rem 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.employee-table td {
+  padding: 0.4rem 0.5rem 0.4rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.employee-table input {
+  width: 100%;
+  min-width: 4.5rem;
+  padding: 0.35em 0.5em;
+}
+
+.employee-table input[type="number"] {
+  font-family: var(--font-data);
+  text-align: right;
+}
+
+.employee-table td code {
+  background: var(--redact-soft);
+  color: var(--redact);
+  padding: 0.15em 0.4em;
+}
+
+.small-btn {
+  font-size: 0.76rem;
+  padding: 0.3em 0.6em;
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+
+.small-btn.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.add-btn {
+  background: transparent;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- */
+/* Ledger rows — label / value pairs, numbers right-aligned           */
+/* ---------------------------------------------------------------- */
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row > span:first-child {
+  color: var(--ink-soft);
+}
+
+.summary-row strong,
+.summary-row code {
+  font-family: var(--font-data);
+}
+
+.summary-row input {
+  max-width: 10rem;
+  text-align: right;
+  font-family: var(--font-data);
+}
+
+.status {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.status.active {
+  color: var(--signal-ink);
+}
+
+/* ---------------------------------------------------------------- */
+/* Active run / registered panels                                    */
+/* ---------------------------------------------------------------- */
+
+.active-run,
+.section.registered {
+  background: var(--signal-soft);
+  border-left: 3px solid var(--signal);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.active-run h4,
+.section.registered h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.92rem;
+  color: var(--signal-ink);
+}
+
+.privacy-note {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-top: 0.9rem;
+}
+
+.run-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-data);
+  font-size: 0.85rem;
+}
+
+.run-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.run-list li.finalized {
+  color: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------------- */
+/* Forms                                                             */
+/* ---------------------------------------------------------------- */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+}
+
+.form-group .small-btn {
+  align-self: flex-start;
+}
+
+/* ---------------------------------------------------------------- */
+/* Buttons                                                           */
+/* ---------------------------------------------------------------- */
+
+.primary-btn {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #06231b;
+  width: 100%;
+  padding: 0.75em 1.1em;
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--ink);
+  width: 100%;
+}
+
+.actions {
+  border-top: 1px solid var(--line);
+}
