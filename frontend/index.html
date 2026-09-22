@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Undisclosed — shielded payroll on Midnight</title>
+<meta name="description" content="Pay a team on-chain without publishing who's on it or what they earn. A shielded payroll protocol built with Compact on Midnight." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #eef2f1;
+    --surface: #ffffff;
+    --ink: #12191c;
+    --ink-soft: #57666b;
+    --line: #c9d3d1;
+    --header-bg: #0e1416;
+    --header-ink: #edf2f0;
+    --header-line: #263134;
+    --signal: #1f9e7a;
+    --signal-soft: #e1f3ec;
+    --signal-ink: #0e5c46;
+    --redact: #97a6a3;
+    --redact-soft: #e4e9e8;
+    --font-ui: "Archivo", system-ui, -apple-system, sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    background: var(--bg);
+  }
+
+  a { color: var(--signal-ink); }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  header.top {
+    background: var(--header-bg);
+    color: var(--header-ink);
+    border-bottom: 1px solid var(--header-line);
+  }
+
+  .top .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .mark {
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .top nav {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.88rem;
+  }
+
+  .top nav a {
+    color: #b7c4c0;
+    text-decoration: none;
+  }
+
+  .top nav a:hover { color: var(--header-ink); }
+
+  .top .cta {
+    background: var(--signal);
+    color: #06231b;
+    padding: 0.5em 1em;
+    border-radius: 2px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+
+  /* ---------------- hero ---------------- */
+
+  .hero {
+    padding: 4.5rem 0 3.5rem;
+  }
+
+  .hero h1 {
+    font-size: 2.3rem;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0 0 1.1rem;
+    max-width: 18ch;
+  }
+
+  .hero p.lede {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 52ch;
+    margin: 0 0 2rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75em 1.3em;
+    border-radius: 2px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-decoration: none;
+    border: 1px solid var(--ink);
+  }
+
+  .btn.primary {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .btn.secondary {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  /* ---------------- payslip demo device ---------------- */
+
+  .payslip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1.4rem 1.5rem;
+  }
+
+  .payslip__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.88rem;
+    gap: 1rem;
+  }
+
+  .payslip__row:last-child { border-bottom: none; }
+
+  .payslip__row .label { color: var(--ink-soft); }
+
+  .payslip__row .value {
+    font-family: var(--font-data);
+    text-align: right;
+  }
+
+  .payslip__row .value.public {
+    color: var(--signal-ink);
+  }
+
+  .redact {
+    display: inline-block;
+    background: var(--redact-soft);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--redact) 0,
+      var(--redact) 2px,
+      transparent 2px,
+      transparent 6px
+    );
+    color: transparent;
+    border-radius: 2px;
+    padding: 0.05em 0.5em;
+    user-select: none;
+  }
+
+  /* ---------------- sections ---------------- */
+
+  section {
+    padding: 3rem 0;
+    border-top: 1px solid var(--line);
+  }
+
+  section h2 {
+    font-size: 1.5rem;
+    margin: 0 0 0.6rem;
+    max-width: 26ch;
+  }
+
+  section > .wrap > p.intro {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 56ch;
+    margin: 0 0 2rem;
+  }
+
+  /* how it works — a real sequence, numbered */
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 1.1rem;
+    padding: 1.2rem 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .step:first-child { border-top: none; }
+
+  .step__num {
+    font-family: var(--font-data);
+    color: var(--redact);
+    font-size: 0.85rem;
+    padding-top: 0.15rem;
+    flex-shrink: 0;
+    width: 1.5rem;
+  }
+
+  .step h3 {
+    margin: 0 0 0.3rem;
+    font-size: 1rem;
+  }
+
+  .step p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    max-width: 48ch;
+  }
+
+  /* public vs private ledger */
+
+  .ledger {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+  }
+
+  .ledger__col {
+    padding: 1.3rem 1.4rem;
+  }
+
+  .ledger__col + .ledger__col {
+    border-left: 1px solid var(--line);
+  }
+
+  .ledger__col h3 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: none;
+    margin: 0 0 0.9rem;
+  }
+
+  .ledger__col.public h3 { color: var(--signal-ink); }
+  .ledger__col.private h3 { color: var(--redact); }
+
+  .ledger__col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.86rem;
+    line-height: 1.9;
+    color: var(--ink);
+  }
+
+  .ledger__col.private ul { color: var(--ink-soft); }
+
+  @media (max-width: 640px) {
+    .ledger { grid-template-columns: 1fr; }
+    .ledger__col + .ledger__col { border-left: none; border-top: 1px solid var(--line); }
+    .hero h1 { font-size: 1.85rem; }
+  }
+
+  /* stack */
+
+  .stack-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.9rem;
+    gap: 1rem;
+  }
+
+  .stack-row:last-child { border-bottom: none; }
+
+  .stack-row .name { font-weight: 600; }
+
+  .stack-row .desc { color: var(--ink-soft); text-align: right; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2rem 0 3rem;
+  }
+
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  footer nav {
+    display: flex;
+    gap: 1.2rem;
+  }
+
+  footer a { color: var(--ink-soft); text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="mark">Undisclosed</span>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy model</a>
+      <a href="https://github.com/devboluwatife53/undisclosed">GitHub</a>
+    </nav>
+    <a class="cta" href="/app/">Open app</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <h1>Pay a team without publishing who's on it</h1>
+      <p class="lede">
+        Undisclosed is a payroll protocol on Midnight. An employer funds a
+        pay run behind a single committed total. Each employee withdraws
+        their own salary with a proof, not a name. The chain never learns
+        who's employed or what anyone earns.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="/app/">Open the app</a>
+        <a class="btn secondary" href="https://github.com/devboluwatife53/undisclosed">View source</a>
+      </div>
+
+      <div class="payslip">
+        <div class="payslip__row">
+          <span class="label">Payroll run</span>
+          <span class="value public">#1 — active</span>
+        </div>
+        <div class="payslip__row">
+          <span class="label">Total committed</span>
+          <span class="value public">165,000</span>
+        </div>
+        <div class="payslip__row">
+          <span class="label">Employee</span>
+          <span class="value"><span class="redact">a41f9c2e</span></span>
+        </div>
+        <div class="payslip__row">
+          <span class="label">Salary</span>
+          <span class="value"><span class="redact">55,000</span></span>
+        </div>
+        <div class="payslip__row">
+          <span class="label">Withdrawal proof</span>
+          <span class="value public">verified</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How a payroll run works</h2>
+      <p class="intro">
+        Four steps, all enforced by the Compact contract — no off-chain
+        trust beyond the employer building the tree honestly.
+      </p>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num">01</span>
+          <div>
+            <h3>Employer commits the payroll list</h3>
+            <p>Off-chain, the employer hashes each employee's pubkey, salary, and a nonce into a commitment, builds a Merkle tree from them, and publishes only the tree's root and the total payroll amount.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num">02</span>
+          <div>
+            <h3>Employer funds the shielded pool</h3>
+            <p>The total payroll value moves into a shielded note. The chain sees a commitment and a value — never which employee gets what share of it.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num">03</span>
+          <div>
+            <h3>Employee proves membership and withdraws</h3>
+            <p>Each employee generates a zero-knowledge proof that they're in the tree, without revealing which leaf is theirs. A nullifier stops the same commitment from withdrawing twice.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num">04</span>
+          <div>
+            <h3>Employer finalizes the run</h3>
+            <p>Once withdrawals are done, the employer closes the run. No more proofs are accepted against it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <h2>What the chain can and can't see</h2>
+      <div class="ledger">
+        <div class="ledger__col public">
+          <h3>Public on-chain</h3>
+          <ul>
+            <li>Employer's pseudonymous pubkey</li>
+            <li>Merkle root of the payroll tree</li>
+            <li>Total committed payroll amount</li>
+            <li>Number of withdrawals (nullifier count)</li>
+            <li>When the run was finalized</li>
+          </ul>
+        </div>
+        <div class="ledger__col private">
+          <h3>Never on-chain</h3>
+          <ul>
+            <li>Which employees are in the payroll</li>
+            <li>Individual salary amounts</li>
+            <li>Which employee made which withdrawal</li>
+            <li>The employee-to-amount mapping</li>
+            <li>Whether a specific person is employed here</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Built on</h2>
+      <div class="stack-row">
+        <span class="name">Compact</span>
+        <span class="desc">The payroll contract — commitments, Merkle membership, nullifiers</span>
+      </div>
+      <div class="stack-row">
+        <span class="name">Midnight ZK toolkit</span>
+        <span class="desc">Off-chain proof generation for withdrawal proofs</span>
+      </div>
+      <div class="stack-row">
+        <span class="name">Lace wallet</span>
+        <span class="desc">Connect, sign, and prove client-side — no local proof server needed</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Undisclosed — a payroll protocol on Midnight.</span>
+    <nav>
+      <a href="https://github.com/devboluwatife53/undisclosed">GitHub</a>
+      <a href="https://github.com/devboluwatife53/undisclosed/blob/main/DESIGN.md">Design doc</a>
+      <a href="https://github.com/devboluwatife53/undisclosed/blob/main/PROPOSAL.md">Proposal</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
