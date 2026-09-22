@@ -218,6 +218,28 @@ export type WithdrawalProofData = {
 export const derivePublicKey = (secretKey: Uint8Array): string =>
   toHex(Payroll.pureCircuits.publicKey(secretKey));
 
+// Deterministically derives a payroll identity secret key from a wallet's
+// known unshielded address — the same address always produces the same
+// secret, and unlike a signature-based derivation this needs no wallet
+// interaction, so anyone who knows an employee's address (as an employer
+// registering them would) can compute it too. That's fine here: the
+// circuit's commitment (`computeCommitment`) never proves ownership of a
+// secret key in the first place — it only checks that pubkey+amount+nonce
+// hash to a leaf already in the tree — so this doesn't weaken anything the
+// scheme actually guarantees today (see DESIGN.md's "Trust Assumptions").
+export const deriveIdentitySecretKeyFromAddress = async (
+  unshieldedAddress: string,
+): Promise<Uint8Array> => {
+  const encoded = new TextEncoder().encode(`undisclosed:identity:${unshieldedAddress}`);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return new Uint8Array(digest);
+};
+
+// Convenience for the employer flow: go straight from an employee's known
+// wallet address to the public key value their commitment should use.
+export const derivePublicKeyFromAddress = async (unshieldedAddress: string): Promise<string> =>
+  derivePublicKey(await deriveIdentitySecretKeyFromAddress(unshieldedAddress));
+
 export const computeCommitment = (
   pubkey: Uint8Array,
   amount: bigint,

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 import { toHex, fromHex } from "@midnight-ntwrk/midnight-js/utils";
-import { connectWallet, disconnectWallet, deriveIdentitySecretKey } from "../midnight/dappConnector";
+import { connectWallet, disconnectWallet } from "../midnight/dappConnector";
 import { buildProviders } from "../midnight/providers";
 import {
   createPayrollRun as createPayrollRunCircuit,
@@ -12,6 +12,7 @@ import {
   deploy as deployPayroll,
   joinContract as joinPayrollContract,
   derivePublicKey,
+  deriveIdentitySecretKeyFromAddress,
   computeCommitment,
   computeNullifier,
   type DeployedPayrollContract,
@@ -137,7 +138,7 @@ export const usePayrollState = () => {
       setWallet({ walletName, unshieldedAddress, shieldedAddress });
       const [built, identitySecretKey] = await Promise.all([
         buildProviders(connectedApi),
-        deriveIdentitySecretKey(connectedApi),
+        deriveIdentitySecretKeyFromAddress(unshieldedAddress),
       ]);
       setProviders(built);
       setIdentitySecretKeyHex(toHex(identitySecretKey));

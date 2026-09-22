@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { usePayroll } from "../hooks/usePayroll";
 import { toHex } from "@midnight-ntwrk/midnight-js/utils";
+import { derivePublicKeyFromAddress } from "../midnight/payrollContract";
 
 interface Employee {
   name: string;
-  pubkey: string;
+  walletAddress: string;
   amount: string; // string for input, converted to bigint
   nonce: string;
 }
@@ -21,13 +22,14 @@ export const EmployerView = () => {
     employerCreatePayrollRun,
     employerFinalizePayroll,
     publicKey,
+    wallet,
     hasContract,
   } = usePayroll();
 
   const [employees, setEmployees] = useState<Employee[]>([
-    { name: "Alice", pubkey: "", amount: "50000", nonce: generateNonce() },
-    { name: "Bob", pubkey: "", amount: "60000", nonce: generateNonce() },
-    { name: "Carol", pubkey: "", amount: "55000", nonce: generateNonce() },
+    { name: "Alice", walletAddress: "", amount: "50000", nonce: generateNonce() },
+    { name: "Bob", walletAddress: "", amount: "60000", nonce: generateNonce() },
+    { name: "Carol", walletAddress: "", amount: "55000", nonce: generateNonce() },
   ]);
   const [totalAmount, setTotalAmount] = useState<string>("");
 
@@ -38,6 +40,8 @@ export const EmployerView = () => {
   const activeRun = useMemo(() => {
     return ledgerState?.payrollRuns.find((r) => r.isActive && !r.isFinalized);
   }, [ledgerState]);
+
+  const allAddressesFilled = employees.every((emp) => emp.walletAddress.trim().length > 0);
 
   const handleEmployeeChange = (index: number, field: keyof Employee, value: string) => {
     setEmployees((prev) => {
@@ -50,7 +54,7 @@ export const EmployerView = () => {
   const addEmployee = () => {
     setEmployees((prev) => [
       ...prev,
-      { name: `Employee ${prev.length + 1}`, pubkey: "", amount: "0", nonce: generateNonce() },
+      { name: `Employee ${prev.length + 1}`, walletAddress: "", amount: "0", nonce: generateNonce() },
     ]);
   };
 
@@ -60,11 +64,16 @@ export const EmployerView = () => {
   };
 
   const handleCreatePayroll = async () => {
-    const employeeData = employees.map((emp) => ({
-      pubkey: emp.pubkey || publicKey || "",
-      amount: BigInt(emp.amount || "0"),
-      nonce: emp.nonce,
-    }));
+    // Each employee's pubkey is derived straight from their wallet address —
+    // no separate registration step needed. Whoever connects with that same
+    // wallet later derives the identical value (see payrollContract.ts).
+    const employeeData = await Promise.all(
+      employees.map(async (emp) => ({
+        pubkey: await derivePublicKeyFromAddress(emp.walletAddress),
+        amount: BigInt(emp.amount || "0"),
+        nonce: emp.nonce,
+      })),
+    );
 
     await employerCreatePayrollRun(employeeData, totalCommitted);
   };
@@ -76,11 +85,10 @@ export const EmployerView = () => {
   return (
     <div className="employer-view">
       <h2>Employer dashboard</h2>
-      
+
       {publicKey && (
         <div className="pubkey-display">
           <strong>Your Public Key:</strong> <code>{publicKey.slice(0, 16)}…</code>
-          <small>(Employees use this to register)</small>
         </div>
       )}
 
@@ -92,7 +100,7 @@ export const EmployerView = () => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Public Key</th>
+              <th>Wallet Address</th>
               <th>Salary</th>
               <th>Nonce (auto)</th>
               <th>Actions</th>
@@ -112,15 +120,14 @@ export const EmployerView = () => {
                 <td>
                   <input
                     type="text"
-                    value={emp.pubkey}
-                    onChange={(e) => handleEmployeeChange(idx, "pubkey", e.target.value)}
-                    placeholder="Employee public key"
-                    readOnly={!!emp.pubkey}
+                    value={emp.walletAddress}
+                    onChange={(e) => handleEmployeeChange(idx, "walletAddress", e.target.value)}
+                    placeholder="Employee's unshielded wallet address"
                   />
-                  {!emp.pubkey && publicKey && (
+                  {!emp.walletAddress && wallet?.unshieldedAddress && (
                     <button
                       className="small-btn"
-                      onClick={() => handleEmployeeChange(idx, "pubkey", publicKey)}
+                      onClick={() => handleEmployeeChange(idx, "walletAddress", wallet.unshieldedAddress)}
                     >
                       Use Mine
                     </button>
@@ -176,7 +183,7 @@ export const EmployerView = () => {
           <button
             className="primary-btn"
             onClick={handleCreatePayroll}
-            disabled={!!busy || employees.length === 0 || totalCommitted === 0n}
+            disabled={!!busy || employees.length === 0 || totalCommitted === 0n || !allAddressesFilled}
           >
             {busy ? busy : "Create Payroll Run"}
           </button>

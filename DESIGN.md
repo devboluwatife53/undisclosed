@@ -143,6 +143,19 @@ Employer:
 2. **Employees keep secrets safe**: Private keys, nonces, amounts
 3. **Midnight Zswap**: Provides shielded value transfer
 4. **No trusted setup**: All proofs use transparent hash-based circuits
+5. **The employer is trusted not to self-withdraw (current MVP gap)**: An
+   employee's payroll identity (`pubkey`) is derived deterministically from
+   their known wallet address (`deriveIdentitySecretKeyFromAddress` in the
+   frontend), which lets an employer register someone without any
+   interaction from them. But since the employer also chooses `amount` and
+   `nonce` for every employee when building the tree, the employer already
+   knows every value `computeCommitment`/`verifyWithdrawalProof` needs — the
+   circuit never requires proof of a secret only the employee holds. In
+   practice that means the employer (or anyone who saw the employer's
+   off-chain registration data) could construct a valid withdrawal proof for
+   any employee themselves. Closing this requires the employee to contribute
+   their own secret the employer never sees (e.g. their own chosen nonce),
+   which the current MVP does not yet do.
 
 ---
 
