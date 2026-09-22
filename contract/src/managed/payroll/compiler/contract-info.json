@@ -1,0 +1,721 @@
+{
+  "compiler-version": "0.31.1",
+  "language-version": "0.23.0",
+  "runtime-version": "0.16.0",
+  "circuits": [
+    {
+      "name": "computeCommitment",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "pubkey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "amount",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "computeNullifier",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "commitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "secret",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "verifyMerkleProof",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "root",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "proof",
+          "type": {
+            "type-name": "Struct",
+            "name": "MerkleProof",
+            "elements": [
+              {
+                "name": "leaf",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "path0",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "path1",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "path2",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "path3",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "indices",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "verifyWithdrawalProof",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "merkleRoot",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "proof",
+          "type": {
+            "type-name": "Struct",
+            "name": "WithdrawalProof",
+            "elements": [
+              {
+                "name": "merkleProof",
+                "type": {
+                  "type-name": "Struct",
+                  "name": "MerkleProof",
+                  "elements": [
+                    {
+                      "name": "leaf",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path0",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path1",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path2",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path3",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "indices",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "nullifier",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "amount",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "pubkey",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "nonce",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "computeShieldedCommitment",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "value",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "secret",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "verifyShieldedOpening",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "commitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "value",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "secret",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "createPayrollRun",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "merkleRoot",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "totalCommitted",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "fundPayroll",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "noteCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "value",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "withdraw",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "proof",
+          "type": {
+            "type-name": "Struct",
+            "name": "WithdrawalProof",
+            "elements": [
+              {
+                "name": "merkleProof",
+                "type": {
+                  "type-name": "Struct",
+                  "name": "MerkleProof",
+                  "elements": [
+                    {
+                      "name": "leaf",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path0",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path1",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path2",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "path3",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    },
+                    {
+                      "name": "indices",
+                      "type": {
+                        "type-name": "Bytes",
+                        "length": 32
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "nullifier",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "amount",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "pubkey",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              },
+              {
+                "name": "nonce",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "finalizePayroll",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "publicKey",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "sk",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "getCurrentRun",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Struct",
+        "name": "PayrollRun",
+        "elements": [
+          {
+            "name": "id",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "employer",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "merkleRoot",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "totalCommitted",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "isActive",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 1
+            }
+          },
+          {
+            "name": "isFinalized",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "hasActivePayrollRun",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Uint",
+        "maxval": 1
+      }
+    },
+    {
+      "name": "getNullifierCount",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
+      }
+    },
+    {
+      "name": "getShieldedPool",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Struct",
+        "name": "ShieldedPool",
+        "elements": [
+          {
+            "name": "noteCommitment",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "value",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "isSpent",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "getPayrollCounter",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
+      }
+    }
+  ],
+  "witnesses": [
+    {
+      "name": "employerSecretKey",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    }
+  ],
+  "contracts": [
+  ],
+  "ledger": [
+    {
+      "name": "nullifierCount",
+      "index": 0,
+      "exported": true,
+      "storage": "Counter"
+    },
+    {
+      "name": "payrollCounter",
+      "index": 1,
+      "exported": true,
+      "storage": "Counter"
+    },
+    {
+      "name": "currentRun",
+      "index": 2,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Struct",
+        "name": "PayrollRun",
+        "elements": [
+          {
+            "name": "id",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "employer",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "merkleRoot",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "totalCommitted",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "isActive",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 1
+            }
+          },
+          {
+            "name": "isFinalized",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "hasActiveRun",
+      "index": 3,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Uint",
+        "maxval": 1
+      }
+    },
+    {
+      "name": "shieldedPool",
+      "index": 4,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Struct",
+        "name": "ShieldedPool",
+        "elements": [
+          {
+            "name": "noteCommitment",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "value",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "isSpent",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
