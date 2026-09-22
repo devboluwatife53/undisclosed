@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 import { toHex, fromHex } from "@midnight-ntwrk/midnight-js/utils";
 import { connectWallet, disconnectWallet } from "../midnight/dappConnector";
@@ -106,7 +106,12 @@ class MerkleTree {
   }
 }
 
-export const usePayroll = () => {
+// The actual stateful implementation — call this exactly once, in App.tsx,
+// and share the result via PayrollContext. Every other component reads it
+// through usePayroll() below; calling this hook directly from more than one
+// component would give each caller its own independent wallet/contract
+// state instead of sharing the one connection.
+export const usePayrollState = () => {
   const [api, setApi] = useState<ConnectedAPI | null>(null);
   const [wallet, setWallet] = useState<WalletInfo | null>(null);
   const [providers, setProviders] = useState<PayrollProviders | null>(null);
@@ -392,6 +397,19 @@ export const usePayroll = () => {
       employeeWithdraw,
     ],
   );
+};
+
+export const PayrollContext = createContext<ReturnType<typeof usePayrollState> | null>(
+  null,
+);
+
+// Read the shared payroll/wallet state set up by <PayrollProvider> (App.tsx).
+export const usePayroll = () => {
+  const ctx = useContext(PayrollContext);
+  if (!ctx) {
+    throw new Error("usePayroll() must be used within a PayrollContext.Provider");
+  }
+  return ctx;
 };
 
 // What the employer needs to register one employee into the payroll tree.
