@@ -33,7 +33,7 @@ MVP (multi-leaf Merkle verification, enforced nullifier set).
 
 ## Live demo
 
-_TBD — link goes here once the payroll frontend is deployed._
+**[undisclosed-frontend.vercel.app](https://undisclosed-frontend.vercel.app/)** — the landing page; connect Lace and go to `/app` to fund a payroll run or withdraw.
 
 ## Demo video
 
