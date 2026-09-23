@@ -24,7 +24,7 @@ MVP (multi-leaf Merkle verification, enforced nullifier set).
 ## Deployed contract
 
 - Network: **Preview**
-- Contract address: `9fa713a0ac1f9926f514a9430f191f8481ce4f6e8d0ffa3aa0a2652c3f5010dc`
+- Contract address: [`9fa713a0ac1f9926f514a9430f191f8481ce4f6e8d0ffa3aa0a2652c3f5010dc`](https://preview.midnightexplorer.com/contracts/9fa713a0ac1f9926f514a9430f191f8481ce4f6e8d0ffa3aa0a2652c3f5010dc)
 - Verify independently at any time (no wallet needed, reads the indexer directly):
   ```bash
   cd cli
